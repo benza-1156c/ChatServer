@@ -1,10 +1,12 @@
 package dto
 
-import "mime/multipart"
-
 type RegisterReq struct {
-	UserName string                `json:"username"`
-	Email    string                `json:"email"`
-	Password string                `json:"password"`
-	Avatar   *multipart.FileHeader `json:"avatar"`
+	UserName string `json:"username" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LoginReq struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }

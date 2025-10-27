@@ -1,25 +1,23 @@
 package usecases
 
 import (
+	"chatserver/entities"
 	"chatserver/modules/auth/dto"
 	"chatserver/modules/auth/repositories"
-	"context"
+	"chatserver/pkg/utils"
 	"errors"
-	"fmt"
+	"time"
 
-	"github.com/cloudinary/cloudinary-go/v2"
-	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type authUsecases struct {
 	repo repositories.AuthRepo
-	cld  *cloudinary.Cloudinary
 }
 
-func NewAuthUsecases(repo repositories.AuthRepo, cld *cloudinary.Cloudinary) AuthUsecases {
+func NewAuthUsecases(repo repositories.AuthRepo) AuthUsecases {
 	return &authUsecases{
 		repo: repo,
-		cld:  cld,
 	}
 }
 
@@ -29,23 +27,38 @@ func (u *authUsecases) Register(req *dto.RegisterReq) error {
 		return errors.New("อีเมลนี้ถูกใช้แล้ว")
 	}
 
-	var avatarURL *string
-	if req.Avatar != nil {
-		resp, err := u.cld.Upload.Upload(context.Background(), req.Avatar,
-			uploader.UploadParams{
-				Folder:   "chatserver/avatars",
-				PublicID: fmt.Sprintf("user_%s", req.Email),
-			})
-		if err != nil {
-			return errors.New("อัพโหลดรูปไม่สำเร็จ")
-		}
-
-		avatarURL = &resp.SecureURL
+	password, err := utils.HashPassword(req.Password)
+	if err != nil {
+		return err
 	}
 
-	if err := u.repo.CreateUser(req, avatarURL); err != nil {
+	newUser := &entities.User{
+		UserName: req.UserName,
+		Email:    req.Email,
+		Password: password,
+	}
+
+	if err := u.repo.CreateUser(newUser); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (u *authUsecases) Login(data *dto.LoginReq) (string, error) {
+	user, err := u.repo.FindOneUserByEmail(data.Email)
+	if err != nil {
+		return "", errors.New("ไม่พบผู้ใช้")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(data.Password)); err != nil {
+		return "", errors.New("รหัสผ่านไม่ถูกต้อง")
+	}
+
+	accesstoken, err := utils.GenerateJWT(user.ID, 700000*time.Hour)
+	if err != nil {
+		return "", err
+	}
+
+	return accesstoken, nil
 }

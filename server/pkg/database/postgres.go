@@ -1,7 +1,7 @@
 package database
 
 import (
-	"chatserver/models"
+	"chatserver/entities"
 	"fmt"
 	"log"
 	"os"
@@ -12,18 +12,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-const (
-	host     = "localhost"
-	port     = 5433
-	user     = "myuser"
-	password = "mypassword"
-	dbname   = "mydatabase"
-)
-
 func ConnectPosgres() *gorm.DB {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+	dsn := os.Getenv("POSTGRES_URL")
 
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -41,7 +31,7 @@ func ConnectPosgres() *gorm.DB {
 		panic(err)
 	}
 
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&entities.User{})
 
 	fmt.Println("Successfully connected!")
 

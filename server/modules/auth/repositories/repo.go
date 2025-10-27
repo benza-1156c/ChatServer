@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"chatserver/modules/auth/dto"
+	"chatserver/entities"
 
 	"gorm.io/gorm"
 )
@@ -14,18 +14,27 @@ func NewAuthRepo(db *gorm.DB) AuthRepo {
 	return &authRepo{db: db}
 }
 
+func (r *authRepo) FindOneUserByEmail(email string) (*entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (r *authRepo) FindUserByEmail(email string) (bool, error) {
-	var count int64
-	if err := r.db.Raw("SELECT COUNT(*) FROM users WHERE email = ?", email).Scan(&count).Error; err != nil {
+	var exists bool
+	if err := r.db.
+		Raw("SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)", email).
+		Scan(&exists).
+		Error; err != nil {
 		return false, err
 	}
 
-	return count > 0, nil
+	return exists, nil
 }
 
-func (r *authRepo) CreateUser(data *dto.RegisterReq, avatarURL *string) error {
-	return r.db.Exec(
-		"INSERT INTO users (user_name, email, password, avatar) VALUES (?, ?, ?, ?)",
-		data.UserName, data.Email, data.Password, avatarURL,
-	).Error
+func (r *authRepo) CreateUser(data *entities.User) error {
+	return r.db.Create(data).Error
 }

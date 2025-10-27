@@ -1,8 +1,9 @@
 package repositories
 
-import "chatserver/modules/auth/dto"
+import "chatserver/entities"
 
 type AuthRepo interface {
+	FindOneUserByEmail(email string) (*entities.User, error)
 	FindUserByEmail(email string) (bool, error)
-	CreateUser(data *dto.RegisterReq, avatarURL *string) error
+	CreateUser(data *entities.User) error
 }

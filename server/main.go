@@ -4,10 +4,7 @@ import (
 	"chatserver/modules/websocket/hub"
 	"chatserver/pkg/database"
 	"chatserver/routes"
-	"fmt"
-	"os"
 
-	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
@@ -21,13 +18,6 @@ func main() {
 	h := hub.NewHub()
 	go h.Run()
 
-	cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Connected to Cloudinary")
-
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
@@ -37,9 +27,9 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	routes.SetUpRoutes(app, h, db, cld)
+	routes.SetUpRoutes(app, h, db)
 
-	if err := app.Listen(":80"); err != nil {
+	if err := app.Listen(":8080"); err != nil {
 		panic(err)
 	}
 }
