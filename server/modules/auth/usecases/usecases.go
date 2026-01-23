@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -33,7 +34,8 @@ func (u *authUsecases) Register(req *dto.RegisterReq) error {
 	}
 
 	newUser := &entities.User{
-		UserName: req.UserName,
+		ID:       uuid.New(),
+		Username: req.UserName,
 		Email:    req.Email,
 		Password: password,
 	}
@@ -55,10 +57,28 @@ func (u *authUsecases) Login(data *dto.LoginReq) (string, error) {
 		return "", errors.New("รหัสผ่านไม่ถูกต้อง")
 	}
 
-	accesstoken, err := utils.GenerateJWT(user.ID, 700000*time.Hour)
+	accesstoken, err := utils.GenerateJWT(user.ID.String(), 700000*time.Hour)
 	if err != nil {
 		return "", err
 	}
 
 	return accesstoken, nil
+}
+
+func (u *authUsecases) FindUserByID(id uuid.UUID) (*entities.User, error) {
+	cacheKey := utils.GenerateCacheKey("user", id.String())
+
+	cacheUser, err := utils.RedisGet[entities.User](cacheKey)
+	if err == nil {
+		return cacheUser, nil
+	}
+
+	user, err := u.repo.FindUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	go utils.RedisSet(cacheKey, user, 5*time.Minute)
+
+	return user, nil
 }

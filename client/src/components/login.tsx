@@ -9,19 +9,29 @@ import toast from "react-hot-toast";
 import { FieldDescription, FieldSeparator } from "./ui/field";
 import Link from "next/link";
 import { motion } from "motion/react";
+import { useAuth } from "@/app/AuthProviders";
+import { useRouter } from "next/navigation";
 
 export default function SignupFormDemo() {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const router = useRouter();
+  const { refetchUser } = useAuth();
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      const res = await api.post("/login", {
+      await api.post("/login", {
         email: e.target.email.value,
         password: e.target.password.value,
       });
-      const data = res.data;
+      refetchUser();
       toast.success("ล็อกอินสำเร็จ!");
+      router.push("/");
     } catch (error: any) {
       toast.error(error.response.data.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
   return (
@@ -42,19 +52,20 @@ export default function SignupFormDemo() {
 
       <form className="my-8" onSubmit={handleSubmit}>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">อีเมล</Label>
           <Input id="email" placeholder="projectmayhem@fc.com" type="email" />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">รหัสผ่าน</Label>
           <Input id="password" placeholder="••••••••" type="password" />
         </LabelInputContainer>
 
         <button
+          disabled={isSubmitting}
           className="group/btn cursor-pointer relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
           type="submit"
         >
-          Sign in &rarr;
+          เข้าสู่ระบบ &rarr;
           <BottomGradient />
         </button>
       </form>

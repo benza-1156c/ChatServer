@@ -12,8 +12,13 @@ import {
 } from "@/components/ui/resizable-navbar";
 import Link from "next/link";
 import { useState } from "react";
+import { useAuth } from "@/app/AuthProviders";
 
 export function NavbarDemo() {
+  const { user } = useAuth();
+
+  console.log(user);
+
   const navItems = [
     {
       name: "Features",
@@ -38,8 +43,10 @@ export function NavbarDemo() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <Link href={"/login"}>
-              <NavbarButton variant="secondary">Login</NavbarButton>
+            <Link href="/login">
+              <NavbarButton as="button" variant="secondary">
+                Login
+              </NavbarButton>
             </Link>
             <NavbarButton variant="primary">Book a call</NavbarButton>
           </div>
@@ -69,8 +76,9 @@ export function NavbarDemo() {
               </Link>
             ))}
             <div className="flex w-full flex-col gap-4">
-              <Link href={"/login"}>
+              <Link href="/login">
                 <NavbarButton
+                  as="button"
                   onClick={() => setIsMobileMenuOpen(false)}
                   variant="primary"
                   className="w-full"

@@ -3,6 +3,7 @@ package repositories
 import (
 	"chatserver/entities"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -37,4 +38,13 @@ func (r *authRepo) FindUserByEmail(email string) (bool, error) {
 
 func (r *authRepo) CreateUser(data *entities.User) error {
 	return r.db.Create(data).Error
+}
+
+func (r *authRepo) FindUserByID(id uuid.UUID) (*entities.User, error) {
+	var user entities.User
+	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

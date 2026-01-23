@@ -15,6 +15,8 @@ func main() {
 		panic(err)
 	}
 	db := database.ConnectPosgres()
+	rdb := database.ConnectRedis()
+	_ = rdb
 	h := hub.NewHub()
 	go h.Run()
 

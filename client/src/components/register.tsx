@@ -9,17 +9,24 @@ import toast from "react-hot-toast";
 import { FieldDescription, FieldSeparator } from "./ui/field";
 import Link from "next/link";
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/AuthProviders";
 
 export default function SignupFormDemo() {
+  const router = useRouter();
+  const { refetchUser } = useAuth();
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
-      const res = await api.post("/register", {
+      api.post("/register", {
         username: e.target.username.value,
         email: e.target.email.value,
         password: e.target.password.value,
       });
-      const data = res.data;
+
+      refetchUser();
+      router.push("/");
       toast.success("สมัครสมาชิกสำเร็จ!");
     } catch (error: any) {
       toast.error(error.response.data.message);
@@ -44,16 +51,16 @@ export default function SignupFormDemo() {
       <form className="my-8" onSubmit={handleSubmit}>
         <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
           <LabelInputContainer>
-            <Label htmlFor="username">First name</Label>
+            <Label htmlFor="username">ชื่อผู้ใช้</Label>
             <Input id="username" placeholder="Tyler" type="text" />
           </LabelInputContainer>
         </div>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">อีเมล</Label>
           <Input id="email" placeholder="projectmayhem@fc.com" type="email" />
         </LabelInputContainer>
         <LabelInputContainer className="mb-4">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">รหัสผ่าน</Label>
           <Input id="password" placeholder="••••••••" type="password" />
         </LabelInputContainer>
 

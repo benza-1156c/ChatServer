@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func GenerateJWT(id uint64, cooldow time.Duration) (string, error) {
+func GenerateJWT(id string, cooldow time.Duration) (string, error) {
 	SECRET := os.Getenv("SECRET_JWT")
 	if SECRET == "" {
 		return "", jwt.ErrTokenMalformed

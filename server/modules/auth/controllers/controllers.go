@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 type Authcontrollers struct {
@@ -83,5 +84,28 @@ func (cc *Authcontrollers) Login(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"success": true,
+	})
+}
+
+func (cc *Authcontrollers) Me(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userId").(uuid.UUID)
+	if !ok {
+		return c.Status(401).JSON(fiber.Map{
+			"message": "Unauthorized",
+			"success": false,
+		})
+	}
+
+	user, err := cc.useacses.FindUserByID(userId)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": err.Error(),
+			"success": false,
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data":    user,
 	})
 }

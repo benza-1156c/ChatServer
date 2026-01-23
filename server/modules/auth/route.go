@@ -4,6 +4,7 @@ import (
 	"chatserver/modules/auth/controllers"
 	"chatserver/modules/auth/repositories"
 	"chatserver/modules/auth/usecases"
+	"chatserver/pkg/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -16,6 +17,7 @@ func NewRouteAuthRepo(app *fiber.App, db *gorm.DB) {
 
 	authAPI := app.Group("/api")
 
+	authAPI.Get("/@me", middleware.AuthRequired, controller.Me)
 	authAPI.Post("/register", controller.Register)
 	authAPI.Post("/login", controller.Login)
 }
